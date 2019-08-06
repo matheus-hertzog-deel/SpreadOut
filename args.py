@@ -10,11 +10,16 @@ def get_args():
 
     parser.add_argument('--path', default='./log', help='Path to save model')
 
-    parser.add_argument('--device', choices=['cuda:0','cuda:1', 'cpu'], default='cpu')
+    parser.add_argument('--device', choices=['cuda:0','cuda:1', 'cpu'], default='cuda:0')
 
-    parser.add_argument('--dataset', choices=['mnist','cifar10', 'cifar100', 'stl10', 'tiny', 'caltech'], default='cifar10', help='Choose dataset to perform train and test')
+    parser.add_argument('--dataset', choices=['mnist','cifar10', 'cifar100', 'stl10',
+                                              'tiny', 'caltech'],
+                                               default='cifar10')
 
-    parser.add_argument('--init_mode', choices=['ED','rv','pearson','euclidean','ortho_ed', 'ortho_edALL', 'mahalanobis', 'ortho', 'squared_mahalanobis', 'None'], default='None', help='Kernel init mode')
+    parser.add_argument('--init_mode', choices=['ED','rv','pearson','euclidean',
+                                                'mahalanobis', 'ortho', 'None',
+                                                'squared_mahalanobis'],
+                                                 default='None', help='Kernel init mode')
 
     parser.add_argument('--batch_size', type=int, default=64, help='Batch size')
 
@@ -30,7 +35,9 @@ def get_args():
 
     parser.add_argument('--seed', type=int, default=42, help='Init coeficient')
 
-    parser.add_argument('--model', choices=['alex','resnet34','resnet50','wide_resnet28-10','wide_resnet50-2'], default='alex', help='select cnn architecture')
+    parser.add_argument('--model', choices=['alex','resnet34','resnet50',
+                                            'wide_resnet28-10','wide_resnet50-2'],
+                                            default='alex')
 
     parser.add_argument('--run', type=int, default=0, help='Run counter')
 

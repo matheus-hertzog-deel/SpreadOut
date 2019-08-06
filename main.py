@@ -148,7 +148,7 @@ def main():
 
     scheduler = MultiStepLR(optimizer, milestones=[60, 120, 160, 250], gamma=0.2)
 
-    initializer = Spreadout(1,args.init_mode)
+    initializer = Spreadout(1, args.init_mode)
 
     # Make a list from model's convolutional layers
     conv_layers = []
@@ -171,6 +171,9 @@ def main():
     dist_writer.log_distances('pre_init', conv_layers, initializer.check_fn)
     print("Done")
 
+    if args.init_mode == 'ortho':
+        initialize_model(model, args.init_mode)
+        
     if not args.init_mode == 'None':
         if args.init_epochs < 0: # auto spread
             initializer(model)
