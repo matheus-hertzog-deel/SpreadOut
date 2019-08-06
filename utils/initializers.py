@@ -1,19 +1,17 @@
+
 import math
 import torch.nn as nn
-from .distances import kernel_EuclideanDistance
+import torch
+from tqdm import tqdm
+#from .distances import *
+from .distances import kernel_EuclideanDistance, cov, _batch_mahalanobis
 
 
 def initialize_model(model, mode, init_epochs = 0, gamma = None, optimizer = None):
-    if mode == 'ED':
-        init_w_alex(model)
-        euclidian_init(model, gamma, init_epochs, optimizer)
-    elif mode == 'ortho':
+    print("Initializing Model")
+    if mode == 'ortho':
+        print("Using orthogonal initialization !!")
         ortho_weights(model)
-    elif mode == 'None':
-        init_w_alex(model)
-    elif mode == 'standard':
-        print("Standard Init")
-        return
     else:
         init_w_alex(model)
     return
@@ -52,3 +50,37 @@ def euclidian_init(model, gamma, init_epochs, kernel_optimizer):
                 filter_loss.backward()
                 kernel_optimizer.step()
     print("SpreadOut done!")
+
+def squared_mahalanobis_init(model, gamma, init_epochs, kernel_optimizer):
+    # create list from models' conv2d layers
+    layers = []
+    for i,k in enumerate(model.modules()):
+        if isinstance(k, nn.Conv2d):
+            layers.append(k)
+
+    ## for each layer sum distance and propagate
+    for k in range(len(layers)):
+        print("Spreading layer ", layers[k])
+
+        kernel_optimizer.zero_grad()
+        filter_loss = 0
+
+        l1 = layers[k].weight
+
+        for j in range(l1.shape[1]): # iterate over channels
+            X = l1[0][j].view(1,l1[0][j].shape[1]**2)  # gets first elem
+            for i,w in enumerate(l1): # iterates over filters 0-> 64
+                if i == 0:
+                    continue
+                else:
+                    y = w[0].view(1,w[j].shape[1]**2)
+                    X = torch.cat((X,y))
+
+            VI = torch.inverse(cov(X)) #inverse of covariance matrix
+            for _input in X:
+                filter_loss += _batch_mahalanobis(VI,_input)
+                #print(_batch_mahalanobis(VI,_input))
+        #print(dist)
+
+        filter_loss.backward()
+        kernel_optimizer.step()
